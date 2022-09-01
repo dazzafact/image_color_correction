@@ -21,4 +21,14 @@ You just need an already optimized color input image and another image which is 
 ##Python command
 use the Script with this arguments
 
-`python color_correction.py --reference ref.jpg --input input.jpg`
+
+###use Paramter 
+**Output File**
+`python color_correction.py --reference raw.jpg  --input test1.jpg --out output.jpg`
+
+
+**with an output Preview**
+`python color_correction.py --reference raw.jpg  --input test1.jpg --view`
+
+**with an output Preview and file output**
+`python color_correction.py --reference raw.jpg  --input test1.jpg --out output.jpg --view`
