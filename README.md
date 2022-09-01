@@ -19,4 +19,4 @@ You just need an already optimized color input image and another image which is 
 
 user the Script with this arguments
 
-python color_correction.py --reference ref.jpg --input input.jpg
+`python color_correction.py --reference ref.jpg --input input.jpg`
