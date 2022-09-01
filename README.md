@@ -4,6 +4,8 @@ A python function to correct image White-Balance using Color Cards, detecting wi
 
 You just need an already optimized color input image and another image which is not color optimized. Both images with Color Card, using ArUCo Marker (you can glue them on the Corners of every imageCard to for detecting)
 
+`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg`
+
 ## Image Inputs
 
 **First you need a color optimized Image as Reference using a Color Card with Aruco Markers (See Link).**
@@ -29,10 +31,10 @@ You just need an already optimized color input image and another image which is 
 use the Script with this arguments
 
 ### **Output File**
-`python color_correction.py --reference raw.jpg  --input test1.jpg --out output.jpg`
+`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg`
 
 ### **with an output Preview**
-`python color_correction.py --reference raw.jpg  --input test1.jpg --view`
+`python color_correction.py --reference raw.jpg  --input test.jpg --view`
 
 ### **with an output Preview and file output**
-`python color_correction.py --reference raw.jpg  --input test1.jpg --out output.jpg --view`
+`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg --view`
