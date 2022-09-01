@@ -1,3 +1,13 @@
+"""
+White Balancing using CV2 and COlor Correction Cards with ArUCo Markers
+Author Stephan Krol 
+G-Mail: Stephan.Krol.83[at]
+Website: https://CouchBoss.de
+
+"""
+
+
+
 from imutils.perspective import four_point_transform
 from skimage import exposure
 import numpy as np
