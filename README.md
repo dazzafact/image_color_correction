@@ -1,5 +1,6 @@
 # color_correction
-Detect Color Cards with CV2 Aruco
+Detect Color Cards with   [CV2 Aruco]([https://pages.github.com/](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)).
+
 
 You just need an already optimized color input image and another image which is not color optimized. Both images with Color Card, using ArUCo Marker (you can glue them on the Corners of every imageCard to for detecting)
 
