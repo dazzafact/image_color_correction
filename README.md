@@ -1,6 +1,6 @@
 # White-Balance with Color Cards 
 A python function to correct image White-Balance using Color Cards, detecting with [CV2 Aruco](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html).
-
+Base Idea: https://pyimagesearch.com/2021/02/15/automatic-color-correction-with-opencv-and-python/
 
 You just need an already optimized color input image and another image which is not color optimized. Both images with Color Card, using ArUCo Marker (you can glue them on the Corners of every imageCard to for detecting)
 
@@ -38,3 +38,6 @@ use the Script with this arguments
 
 ### **with an output Preview and file output**
 `python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg --view`
+
+
+Blog: https://pyimagesearch.com/2021/02/15/automatic-color-correction-with-opencv-and-python/
