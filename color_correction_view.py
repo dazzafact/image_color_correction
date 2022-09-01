@@ -5,6 +5,7 @@ import argparse
 import imutils
 import cv2
 import sys
+from os.path import exists
 from PIL import Image
 
 
@@ -132,6 +133,10 @@ def match_histograms_mod(inputCard, referenceCard, fullImage):
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--reference", required=True,
                 help="path to the input reference image")
+ap.add_argument("-v", "--view", required=False, default=False, action='store_true',
+                help="Image Preview?")
+ap.add_argument("-o", "--output", required=False, default=False,
+                help="Image Output Path")
 ap.add_argument("-i", "--input", required=True,
                 help="path to the input image to apply color correction to")
 args = vars(ap.parse_args())
@@ -140,6 +145,7 @@ args = vars(ap.parse_args())
 print("[INFO] loading images...")
 # raw = cv2.imread(args["reference"])
 # img1 = cv2.imread(args["input"])
+
 
 raw = cv2.imread(args["reference"])
 img1 = cv2.imread(args["input"])
@@ -150,8 +156,9 @@ img1 = cv2.imread(args["input"])
 raw = imutils.resize(raw, width=600)
 img1 = imutils.resize(img1, width=600)
 # display the reference and input images to our screen
-cv2.imshow("Reference", raw)
-cv2.imshow("Input", img1)
+if args['view']:
+    cv2.imshow("Reference", raw)
+    cv2.imshow("Input", img1)
 
 # find the color matching card in each image
 print("[INFO] finding color matching cards...")
@@ -165,8 +172,9 @@ if rawCard is None or imageCard is None:
 
 # show the color matching card in the reference image and input image,
 # respectively
-cv2.imshow("Reference Color Card", rawCard)
-cv2.imshow("Input Color Card", imageCard)
+if args['view']:
+    cv2.imshow("Reference Color Card", rawCard)
+    cv2.imshow("Input Color Card", imageCard)
 # apply histogram matching from the color matching card in the
 # reference image to the color matching card in the input image
 print("[INFO] matching images...")
@@ -178,6 +186,22 @@ result2 = match_histograms_mod(imageCard, rawCard, img1)
 # show our input color matching card after histogram matching
 # cv2.imshow("Input Color Card After Matching", inputCard)
 
-cv2.imshow("result2", result2)
 
-cv2.waitKey(0)
+if args['view']:
+    cv2.imshow("result2", result2)
+
+if args['output']:
+    file_exists = args['output'].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))
+
+    if file_exists:
+        cv2.imwrite(args['output'], result2)
+        print("[SUCCESSUL] Your Image was written to: "+args['output']+"")
+    else:
+        print("[WARNING] Sorry, But this is no valid Image Name "+args['output']+"\nPlease Change Parameter!")
+
+if args['view']:
+    cv2.waitKey(0)
+
+if not args['view']:
+    if not args['output']:
+        print('[EMPTY] You Need at least one Paramter "--view" or "--output".')
