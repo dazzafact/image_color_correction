@@ -28,10 +28,13 @@ You just need an already optimized color input image and another image which is 
 
 ## Python command
 
-use the Script with this arguments
-
 ### **Output File**
 `python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg`
+
+
+### **Special uutput File width**
+`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg` --width 1280
+
 
 ### **with an output Preview**
 `python color_correction.py --reference raw.jpg  --input test.jpg --view`
