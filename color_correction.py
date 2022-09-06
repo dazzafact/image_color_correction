@@ -1,6 +1,8 @@
 """
-White Balancing using CV2 and COlor Correction Cards with ArUCo Markers
-Author Stephan Krol 
+Image White Balancing using CV2 and COlor Correction Cards with ArUCo Markers
+Author: https://pyimagesearch.com/2021/02/15/automatic-color-correction-with-opencv-and-python/
+
+Modify Stephan Krol 
 G-Mail: Stephan.Krol.83[at]
 Website: https://CouchBoss.de
 
@@ -16,6 +18,7 @@ import imutils
 import cv2
 import sys
 from os.path import exists
+import os.path as pathfile
 from PIL import Image
 
 
@@ -143,6 +146,8 @@ def match_histograms_mod(inputCard, referenceCard, fullImage):
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--reference", required=True,
                 help="path to the input reference image")
+ap.add_argument("-w", "--width0", required=False,
+                help="Image Size")
 ap.add_argument("-v", "--view", required=False, default=False, action='store_true',
                 help="Image Preview?")
 ap.add_argument("-o", "--output", required=False, default=False,
@@ -155,31 +160,52 @@ args = vars(ap.parse_args())
 print("[INFO] loading images...")
 # raw = cv2.imread(args["reference"])
 # img1 = cv2.imread(args["input"])
+file_exists = pathfile.isfile(args["reference"])
+
+if not file_exists:
+    print('[WARNING] Referenz File not exisits '+str(args["reference"]))
+    sys.exit()
 
 
 raw = cv2.imread(args["reference"])
 img1 = cv2.imread(args["input"])
+
+height, width0, channels = raw.shape
+height2, width1, channels = img1.shape
+
+
 # resize the reference and input images
 
-#raw = imutils.resize(raw, width=301)
-#img1 = imutils.resize(img1, width=301)
-raw = imutils.resize(raw, width=600)
-img1 = imutils.resize(img1, width=600)
-# display the reference and input images to our screen
+newWidth=width0//3
+countStep=400
+goOn=False
+while goOn==False and newWidth<width0:
+
+    raw_ = imutils.resize(raw, newWidth)
+    img1_ = imutils.resize(img1, newWidth)
+
+  
+    print("[INFO] Finding color matching cards width "+ repr(newWidth)+"px")
+    rawCard = find_color_card(raw_)
+    imageCard = find_color_card(img1_)
+    
+    if rawCard is None or imageCard is None:
+        oldW =newWidth
+        newWidth +=countStep
+        print("[INFO] Could not find color with width "+ repr(oldW)+"px. Try width:"+ repr(newWidth)+"px")
+        continue
+    else:
+        goOn=True
+        break
+
+if(goOn is False):
+    print("[WARNING] Could not find color matching cards in both images. Try a highter/better Resolution")
+       
+    sys.exit()
+
 if args['view']:
-    cv2.imshow("Reference", raw)
-    cv2.imshow("Input", img1)
-
-# find the color matching card in each image
-print("[INFO] finding color matching cards...")
-rawCard = find_color_card(raw)
-imageCard = find_color_card(img1)
-# if the color matching card is not found in either the reference
-# image or the input image, gracefully exit
-if rawCard is None or imageCard is None:
-    print("[INFO] could not find color matching card in both images")
-    sys.exit(0)
-
+        cv2.imshow("Reference", raw_)
+        cv2.imshow("Input", img1_)
 # show the color matching card in the reference image and input image,
 # respectively
 if args['view']:
@@ -191,19 +217,29 @@ print("[INFO] matching images...")
 
 # imageCard2 = exposure.match_histograms(img1, ref,
 # inputCard = exposure.match_histograms(inputCard, referenceCard, multichannel=True)
+
+if args["width0"]:
+    width=int(args["width0"])
+    if width>1:    
+        print('resize Final: '+repr(width))
+        img1 = imutils.resize(img1, width)
+
 result2 = match_histograms_mod(imageCard, rawCard, img1)
- 
+
+
+
+
 # show our input color matching card after histogram matching
-# cv2.imshow("Input Color Card After Matching", inputCard)
+#cv2.imshow("Input Color Card After Matching", inputCard)
 
 
 if args['view']:
-    cv2.imshow("result2", result2)
+    cv2.imshow("Input Color Card After Matching", result2)
 
 if args['output']:
-    file_exists = args['output'].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))
+    file_ok = exists(args['output'].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')))
 
-    if file_exists:
+    if file_ok:
         cv2.imwrite(args['output'], result2)
         print("[SUCCESSUL] Your Image was written to: "+args['output']+"")
     else:
