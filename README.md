@@ -13,7 +13,7 @@ https://github.com/dazzafact/image_color_correction/blob/main/color-card.png
 
 ![image](https://user-images.githubusercontent.com/67874406/187918735-78967b36-ce77-47cc-8a17-773ea856d988.png)
 
-**ReferenceImage with correct Colors. It is quite sufficient if only the card can be seen.**
+**ReferenceImage used as the basis for all further image processes. The colors of the image should be optimized to your liking..**
 
 ![image](https://user-images.githubusercontent.com/67874406/187906176-23303477-0dd7-4ef8-ae05-1e36f3e82de7.png)
 
