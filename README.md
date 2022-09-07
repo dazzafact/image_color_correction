@@ -32,11 +32,11 @@ You just need an already optimized color input image and another image which is 
 `python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg`
 
 
-### **Special uutput File width**
+### **Special output File width**
 `python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg` --width 1280
 
 
-### **with an output Preview**
+### **with output Preview**
 `python color_correction.py --reference raw.jpg  --input test.jpg --view`
 
 ### **with an output Preview and file output**
