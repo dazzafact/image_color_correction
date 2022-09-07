@@ -4,25 +4,30 @@ Base Idea: https://pyimagesearch.com/2021/02/15/automatic-color-correction-with-
 
 You just need an already optimized color input image and another image which is not color optimized. Both images with Color Card, using ArUCo Marker (you can glue them on the Corners of every imageCard to for detecting)
 
-`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg`
+`python color_correction.py --reference ref.jpg  --input test.jpg --out output.jpg`
 
 ## Image Inputs
 
 **First you need a color optimized Image as Reference using a Color Card with Aruco Markers (See Link).**
+
 https://github.com/dazzafact/image_color_correction/blob/main/color-card.png
 
 ![image](https://user-images.githubusercontent.com/67874406/187918735-78967b36-ce77-47cc-8a17-773ea856d988.png)
 
-**ReferenceImage used as the basis for all further image processes. The colors of this Card image should be optimized to your liking.**
+**1.) A ReferenceImage used as the basis for all further image processes. The colors of this Card image should be optimized to your liking.**
+
+`--reference ref.jpg`
 
 ![image](https://user-images.githubusercontent.com/67874406/187906176-23303477-0dd7-4ef8-ae05-1e36f3e82de7.png)
 
 
- **As second Paramter you have to choose a none color optimized Image with the a Color card, to detect the Color Difference between both images**
+ **2.) you have to choose a none color optimized Image with the a Color card, to detect the Color Difference between both images**
+
+`--input test.jpg`
 
 ![image](https://user-images.githubusercontent.com/67874406/187906327-8a42dcf2-c312-4ce7-b336-6f8d4f310788.png)
 
-**As result you get the Final color optimized Output Image based on the reference Histogram Colors**
+**3.) As result you get the Final color optimized Output Image based on the reference Histogram Colors**
 
 ![image](https://user-images.githubusercontent.com/67874406/187906458-244286b9-70c5-4b6f-8f35-bdee9908573a.png)
 
