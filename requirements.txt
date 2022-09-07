@@ -2,7 +2,7 @@
 #Tested with python 3.8.10
 imutils==0.5.4
 numpy==1.23
-opencv-contrib-python==4.6.1
+opencv-contrib-python>=4.6.0
 Pillow==9.2
 scikit-image==0.18.1
 scipy==1.9.1
