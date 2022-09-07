@@ -9,6 +9,7 @@ You just need an already optimized color input image and another image which is 
 ## Image Inputs
 
 **First you need a color optimized Image as Reference using a Color Card with Aruco Markers (See Link).**
+https://github.com/dazzafact/image_color_correction/blob/main/color-card.png
 
 ![image](https://user-images.githubusercontent.com/67874406/187918735-78967b36-ce77-47cc-8a17-773ea856d988.png)
 
