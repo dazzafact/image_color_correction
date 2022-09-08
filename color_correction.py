@@ -179,7 +179,7 @@ height2, width1, channels = img1.shape
 newWidth=width0//3
 countStep=400
 goOn=False
-while goOn==False and newWidth<width0:
+while goOn==False and newWidth<=width0:
 
     raw_ = imutils.resize(raw, newWidth)
     img1_ = imutils.resize(img1, newWidth)
