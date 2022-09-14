@@ -50,4 +50,5 @@ https://github.com/dazzafact/image_color_correction/blob/main/color-card.png
 
 
 Blog: https://pyimagesearch.com/2021/02/15/automatic-color-correction-with-opencv-and-python/
+
 Stackoverflow: https://stackoverflow.com/questions/70233645/color-correction-using-opencv-and-color-cards/73566972#73566972
