@@ -8,7 +8,7 @@ You just need an already optimized color input image and another image which is 
 
 ## Image Inputs
 
-**First you need a color optimized Image as Reference using a Color Card with Aruco Markers (follow the Link to [purchase the Panton Color Card](https://www.pantone.com/eu/de/pantone-color-match-card)).**
+**First you need a color optimized Image as Reference using a Color Card with [Aruco Markers](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html) (or follow the Link to [purchase the Panton Color Card](https://www.pantone.com/eu/de/pantone-color-match-card)).**
 
 
 ![image](https://user-images.githubusercontent.com/67874406/187918735-78967b36-ce77-47cc-8a17-773ea856d988.png)
