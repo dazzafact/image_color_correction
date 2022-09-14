@@ -39,7 +39,7 @@ https://github.com/dazzafact/image_color_correction/blob/main/color-card.png
 
 
 ### **Special output File width**
-`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg` --width 1280
+`python color_correction.py --reference raw.jpg  --input test.jpg --out output.jpg  --width 1280`
 
 
 ### **with output Preview**
