@@ -1,8 +1,8 @@
 
-#Tested with python 3.8.10
+#Tested with python 3.11.6
 imutils==0.5.4
-numpy==1.23
-opencv-contrib-python>=4.6.0
-Pillow==9.2
-scikit-image==0.18.1
-scipy==1.9.1
+numpy==1.26.4
+opencv-contrib-python==4.9.0.80
+pillow==10.2.0
+scikit-image==0.22.0
+scipy==1.12.0
