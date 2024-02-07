@@ -22,14 +22,24 @@ import os.path as pathfile
 from PIL import Image
 
 
-def find_color_card(image):
+def find_color_card(image, show_aruco_results=False):
     # load the ArUCo dictionary, grab the ArUCo parameters, and
     # detect the markers in the input image
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
     arucoParams = cv2.aruco.DetectorParameters()
     detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
     (corners, ids, rejected) = detector.detectMarkers(image)
-
+    if show_aruco_results:
+        outputImage = image.copy()
+        cv2.aruco.drawDetectedMarkers(outputImage, corners, ids)
+        winTitle = f"Markers."
+        cv2.imshow(winTitle, outputImage)
+        while True:
+            ch = cv2.waitKey()
+            if ch == 27:
+                break
+            print(f"ignoring key {ch}")
+        cv2.destroyWindow(winTitle)
     # try to extract the coordinates of the color correction card
     try:
         # otherwise, we've found the four ArUco markers, so we can
@@ -186,8 +196,8 @@ while goOn==False and newWidth<=width0:
 
   
     print("[INFO] Finding color matching cards width "+ repr(newWidth)+"px")
-    rawCard = find_color_card(raw_)
-    imageCard = find_color_card(img1_)
+    rawCard = find_color_card(raw_, args["view"])
+    imageCard = find_color_card(img1_, args["view"])
     
     if rawCard is None or imageCard is None:
         oldW =newWidth
