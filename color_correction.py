@@ -164,6 +164,7 @@ ap.add_argument("-o", "--output", required=False, default=False,
                 help="Image Output Path")
 ap.add_argument("-i", "--input", required=True,
                 help="path to the input image to apply color correction to")
+ap.add_argument("-d", "--debug", action="store_true", help="Debug card finder")
 args = vars(ap.parse_args())
 
 # load the reference image and input images from disk
@@ -189,6 +190,14 @@ height2, width1, channels = img1.shape
 newWidth=width0//3
 countStep=400
 goOn=False
+# First try without resizing
+raw_ = raw
+img1_ = img1
+rawCard = find_color_card(raw_, args["debug"])
+imageCard = find_color_card(img1_, args["debug"])
+if not rawCard is None and not imageCard is None:
+    goOn = True
+
 while goOn==False and newWidth<=width0:
 
     raw_ = imutils.resize(raw, newWidth)
@@ -196,8 +205,8 @@ while goOn==False and newWidth<=width0:
 
   
     print("[INFO] Finding color matching cards width "+ repr(newWidth)+"px")
-    rawCard = find_color_card(raw_, args["view"])
-    imageCard = find_color_card(img1_, args["view"])
+    rawCard = find_color_card(raw_, args["debug"])
+    imageCard = find_color_card(img1_, args["debug"])
     
     if rawCard is None or imageCard is None:
         oldW =newWidth
