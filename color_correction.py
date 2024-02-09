@@ -9,20 +9,25 @@ Website: https://CouchBoss.de
 """
 
 
-
+from typing import List
 from imutils.perspective import four_point_transform
 from skimage import exposure
 import numpy as np
 import argparse
 import imutils
 import cv2
+import cv2.typing
 import sys
 from os.path import exists
 import os.path as pathfile
 from PIL import Image
 
+OurImageType = cv2.typing.MatLike
+OurSingleChannelImageType = cv2.typing.MatLike
+OurSingleChannelColormap = List[int]
 
-def find_color_card(image, show_aruco_results=False):
+def find_color_card(image : OurImageType, show_aruco_results=False) -> OurImageType:
+    """Find a color card in an image. Return another image, with only the color card, with perspective fixed"""
     # load the ArUCo dictionary, grab the ArUCo parameters, and
     # detect the markers in the input image
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
@@ -76,7 +81,7 @@ def find_color_card(image, show_aruco_results=False):
     return card
 
 
-def _match_cumulative_cdf_mod(source, template, full):
+def _create_single_channel_colormap(source : OurSingleChannelImageType, template : OurSingleChannelImageType) -> OurSingleChannelColormap:
     """
     Return modified full image array so that the cumulative density function of
     source array matches the cumulative density function of the template.
@@ -93,38 +98,47 @@ def _match_cumulative_cdf_mod(source, template, full):
     interp_a_values = np.interp(src_quantiles, tmpl_quantiles, tmpl_values)
 
     # Here we compute values which the channel RGB value of full image will be modified to.
-    interpb = []
+    colormap_1channel = []
     for i in range(0, 256):
-        interpb.append(-1)
+        colormap_1channel.append(-1)
 
     # first compute which values in src image transform to and mark those values.
 
     for i in range(0, len(interp_a_values)):
         frm = src_values[i]
         to = interp_a_values[i]
-        interpb[frm] = to
+        colormap_1channel[frm] = to
 
     # some of the pixel values might not be there in interp_a_values, interpolate those values using their
     # previous and next neighbours
     prev_value = -1
     prev_index = -1
     for i in range(0, 256):
-        if interpb[i] == -1:
+        if colormap_1channel[i] == -1:
             next_index = -1
             next_value = -1
             for j in range(i + 1, 256):
-                if interpb[j] >= 0:
-                    next_value = interpb[j]
+                if colormap_1channel[j] >= 0:
+                    next_value = colormap_1channel[j]
                     next_index = j
             if prev_index < 0:
-                interpb[i] = (i + 1) * next_value / (next_index + 1)
+                colormap_1channel[i] = (i + 1) * next_value / (next_index + 1)
             elif next_index < 0:
-                interpb[i] = prev_value + ((255 - prev_value) * (i - prev_index) / (255 - prev_index))
+                colormap_1channel[i] = prev_value + ((255 - prev_value) * (i - prev_index) / (255 - prev_index))
             else:
-                interpb[i] = prev_value + (i - prev_index) * (next_value - prev_value) / (next_index - prev_index)
+                colormap_1channel[i] = prev_value + (i - prev_index) * (next_value - prev_value) / (next_index - prev_index)
         else:
-            prev_value = interpb[i]
+            prev_value = colormap_1channel[i]
             prev_index = i
+    return colormap_1channel
+
+def _match_cumulative_cdf_mod(source : OurSingleChannelImageType, template : OurSingleChannelImageType, full : OurSingleChannelImageType) -> OurSingleChannelImageType:
+    """
+    Return modified full image array so that the cumulative density function of
+    source array matches the cumulative density function of the template.
+    """
+    colormap_1channel = _create_single_channel_colormap(source, template)
+    
 
     # finally transform pixel values in full image using interpb interpolation values.
     wid = full.shape[1]
@@ -132,11 +146,11 @@ def _match_cumulative_cdf_mod(source, template, full):
     ret2 = np.zeros((hei, wid))
     for i in range(0, hei):
         for j in range(0, wid):
-            ret2[i][j] = interpb[full[i][j]]
+            ret2[i][j] = colormap_1channel[full[i][j]]
     return ret2
 
 
-def match_histograms_mod(inputCard, referenceCard, fullImage):
+def match_histograms_mod(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
     """
         Return modified full image, by using histogram equalizatin on input and
          reference cards and applying that transformation on fullImage.
