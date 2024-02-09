@@ -9,10 +9,11 @@ Website: https://CouchBoss.de
 """
 
 
-from typing import List
+from typing import Optional, cast
 from imutils.perspective import four_point_transform
 from skimage import exposure
 import numpy as np
+from numpy.typing import NDArray
 import argparse
 import imutils
 import cv2
@@ -22,11 +23,11 @@ from os.path import exists
 import os.path as pathfile
 from PIL import Image
 
-OurImageType = cv2.typing.MatLike
-OurSingleChannelImageType = cv2.typing.MatLike
-OurSingleChannelColormap = List[int]
+OurImageType = NDArray[np.uint8]
+OurSingleChannelImageType = NDArray[np.uint8]
+OurSingleChannelColormap = NDArray[np.int32]
 
-def find_color_card(image : OurImageType, show_aruco_results=False) -> OurImageType:
+def find_color_card(image : OurImageType, show_aruco_results=False) -> Optional[OurImageType]:
     """Find a color card in an image. Return another image, with only the color card, with perspective fixed"""
     # load the ArUCo dictionary, grab the ArUCo parameters, and
     # detect the markers in the input image
@@ -78,7 +79,7 @@ def find_color_card(image : OurImageType, show_aruco_results=False) -> OurImageT
                            bottomRight, bottomLeft])
     card = four_point_transform(image, cardCoords)
     # return the color matching card to the calling function
-    return card
+    return cast(OurImageType, card)
 
 
 def _create_single_channel_colormap(source : OurSingleChannelImageType, template : OurSingleChannelImageType) -> OurSingleChannelColormap:
@@ -98,10 +99,8 @@ def _create_single_channel_colormap(source : OurSingleChannelImageType, template
     interp_a_values = np.interp(src_quantiles, tmpl_quantiles, tmpl_values)
 
     # Here we compute values which the channel RGB value of full image will be modified to.
-    colormap_1channel = []
-    for i in range(0, 256):
-        colormap_1channel.append(-1)
-
+    colormap_1channel = np.ones(256, dtype=np.int32) * -1
+   
     # first compute which values in src image transform to and mark those values.
 
     for i in range(0, len(interp_a_values)):
@@ -132,7 +131,7 @@ def _create_single_channel_colormap(source : OurSingleChannelImageType, template
             prev_index = i
     return colormap_1channel
 
-def _match_cumulative_cdf_mod(source : OurSingleChannelImageType, template : OurSingleChannelImageType, full : OurSingleChannelImageType) -> OurSingleChannelImageType:
+def map_image_colors_1channel(source : OurSingleChannelImageType, template : OurSingleChannelImageType, full : OurSingleChannelImageType) -> OurSingleChannelImageType:
     """
     Return modified full image array so that the cumulative density function of
     source array matches the cumulative density function of the template.
@@ -143,14 +142,14 @@ def _match_cumulative_cdf_mod(source : OurSingleChannelImageType, template : Our
     # finally transform pixel values in full image using interpb interpolation values.
     wid = full.shape[1]
     hei = full.shape[0]
-    ret2 = np.zeros((hei, wid))
+    ret2 = np.zeros((hei, wid), dtype=np.uint8)
     for i in range(0, hei):
         for j in range(0, wid):
             ret2[i][j] = colormap_1channel[full[i][j]]
     return ret2
 
 
-def match_histograms_mod(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
+def map_image_colors(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
     """
         Return modified full image, by using histogram equalizatin on input and
          reference cards and applying that transformation on fullImage.
@@ -160,7 +159,7 @@ def match_histograms_mod(inputCard : OurImageType, referenceCard : OurImageType,
                          'of channels.')
     matched = np.empty(fullImage.shape, dtype=fullImage.dtype)
     for channel in range(inputCard.shape[-1]):
-        matched_channel = _match_cumulative_cdf_mod(inputCard[..., channel], referenceCard[..., channel],
+        matched_channel = map_image_colors_1channel(inputCard[..., channel], referenceCard[..., channel],
                                                     fullImage[..., channel])
         matched[..., channel] = matched_channel
     return matched
@@ -192,8 +191,8 @@ if not file_exists:
     sys.exit()
 
 
-raw = cv2.imread(args["reference"])
-img1 = cv2.imread(args["input"])
+raw = cast(OurImageType, cv2.imread(args["reference"]))
+img1 = cast(OurImageType, cv2.imread(args["input"]))
 
 height, width0, channels = raw.shape
 height2, width1, channels = img1.shape
@@ -235,7 +234,8 @@ if(goOn is False):
     print("[WARNING] Could not find color matching cards in both images. Try a highter/better Resolution")
        
     sys.exit()
-
+assert not rawCard is None
+assert not imageCard is None
 if args['view']:
         cv2.imshow("Reference", raw_)
         cv2.imshow("Input", img1_)
@@ -257,7 +257,7 @@ if args["width0"]:
         print('resize Final: '+repr(width))
         img1 = imutils.resize(img1, width)
 
-result2 = match_histograms_mod(imageCard, rawCard, img1)
+result2 = map_image_colors(imageCard, rawCard, img1)
 
 
 
