@@ -9,7 +9,7 @@ Website: https://CouchBoss.de
 """
 
 
-from typing import Optional, cast
+from typing import Optional, cast, List
 from imutils.perspective import four_point_transform
 from skimage import exposure
 import numpy as np
@@ -24,8 +24,9 @@ import os.path as pathfile
 from PIL import Image
 
 OurImageType = NDArray[np.uint8]
-OurSingleChannelImageType = NDArray[np.uint8]
-OurSingleChannelColormap = NDArray[np.int32]
+OurImageType1Channel = NDArray[np.uint8]
+OurColormap = List[NDArray[np.int32]]
+OurColormap1Channel = NDArray[np.int32]
 
 def find_color_card(image : OurImageType, show_aruco_results=False) -> Optional[OurImageType]:
     """Find a color card in an image. Return another image, with only the color card, with perspective fixed"""
@@ -82,7 +83,7 @@ def find_color_card(image : OurImageType, show_aruco_results=False) -> Optional[
     return cast(OurImageType, card)
 
 
-def _create_single_channel_colormap(source : OurSingleChannelImageType, template : OurSingleChannelImageType) -> OurSingleChannelColormap:
+def _create_colormap_1channel(source : OurImageType1Channel, template : OurImageType1Channel) -> OurColormap1Channel:
     """
     Return modified full image array so that the cumulative density function of
     source array matches the cumulative density function of the template.
@@ -131,12 +132,20 @@ def _create_single_channel_colormap(source : OurSingleChannelImageType, template
             prev_index = i
     return colormap_1channel
 
-def map_image_colors_1channel(source : OurSingleChannelImageType, template : OurSingleChannelImageType, full : OurSingleChannelImageType) -> OurSingleChannelImageType:
+def _create_colormap(source : OurImageType, template : OurImageType) -> OurColormap:
+    rv = []
+    assert source.shape[-1] == template.shape[-1]
+    for channel in range(source.shape[-1]):
+        map = _create_colormap_1channel(source[..., channel], template[..., channel])
+        rv.append(map)
+    return rv
+
+def process_image_colors_1channel(source : OurImageType1Channel, template : OurImageType1Channel, full : OurImageType1Channel) -> OurImageType1Channel:
     """
     Return modified full image array so that the cumulative density function of
     source array matches the cumulative density function of the template.
     """
-    colormap_1channel = _create_single_channel_colormap(source, template)
+    colormap_1channel = _create_colormap_1channel(source, template)
     
 
     # finally transform pixel values in full image using interpb interpolation values.
@@ -148,8 +157,33 @@ def map_image_colors_1channel(source : OurSingleChannelImageType, template : Our
             ret2[i][j] = colormap_1channel[full[i][j]]
     return ret2
 
+def map_image_color_1channel(full_1channel : OurImageType1Channel, colormap_1channel : OurColormap1Channel) -> OurImageType1Channel:
+    wid = full_1channel.shape[1]
+    hei = full_1channel.shape[0]
+    ret2 = np.zeros((hei, wid), dtype=np.uint8)
+    for i in range(0, hei):
+        for j in range(0, wid):
+            ret2[i][j] = colormap_1channel[full_1channel[i][j]]
+    return ret2
 
-def map_image_colors(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
+def map_image_color(fullImage : OurImageType, colormap : OurColormap) -> OurImageType:
+    assert len(colormap) == fullImage.shape[-1]
+    matched = np.empty(fullImage.shape, dtype=fullImage.dtype)
+    for channel in range(len(colormap)):
+        matched_channel = map_image_color_1channel(fullImage[..., channel], colormap[channel])
+        matched[..., channel] = matched_channel
+    return matched
+    
+def process_images(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
+    """
+        Return modified full image, by using histogram equalizatin on input and
+         reference cards and applying that transformation on fullImage.
+    """
+    colormap = _create_colormap(inputCard, referenceCard)
+    rv = map_image_color(fullImage, colormap)
+    return rv
+
+def process_images_old(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
     """
         Return modified full image, by using histogram equalizatin on input and
          reference cards and applying that transformation on fullImage.
@@ -159,7 +193,7 @@ def map_image_colors(inputCard : OurImageType, referenceCard : OurImageType, ful
                          'of channels.')
     matched = np.empty(fullImage.shape, dtype=fullImage.dtype)
     for channel in range(inputCard.shape[-1]):
-        matched_channel = map_image_colors_1channel(inputCard[..., channel], referenceCard[..., channel],
+        matched_channel = process_image_colors_1channel(inputCard[..., channel], referenceCard[..., channel],
                                                     fullImage[..., channel])
         matched[..., channel] = matched_channel
     return matched
@@ -257,7 +291,7 @@ if args["width0"]:
         print('resize Final: '+repr(width))
         img1 = imutils.resize(img1, width)
 
-result2 = map_image_colors(imageCard, rawCard, img1)
+result2 = process_images(imageCard, rawCard, img1)
 
 
 
@@ -267,7 +301,7 @@ result2 = map_image_colors(imageCard, rawCard, img1)
 
 
 if args['view']:
-    cv2.imshow("Input Color Card After Matching", result2)
+    cv2.imshow("Output image", result2)
 
 if args['output']:
     file_ok = exists(args['output'].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')))
