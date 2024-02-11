@@ -6,3 +6,4 @@ opencv-contrib-python==4.9.0.80
 pillow==10.2.0
 scikit-image==0.22.0
 scipy==1.12.0
+matplotlib==3.8.2

@@ -22,21 +22,22 @@ import sys
 from os.path import exists
 import os.path as pathfile
 from PIL import Image
+import matplotlib.pyplot as plt
 
 OurImageType = NDArray[np.uint8]
 OurImageType1Channel = NDArray[np.uint8]
 OurColormap = List[NDArray[np.int32]]
 OurColormap1Channel = NDArray[np.int32]
 
-def find_color_card(image : OurImageType, show_aruco_results=False) -> Optional[OurImageType]:
+def find_color_card(image : OurImageType, debug : bool=False) -> Optional[OurImageType]:
     """Find a color card in an image. Return another image, with only the color card, with perspective fixed"""
     # load the ArUCo dictionary, grab the ArUCo parameters, and
     # detect the markers in the input image
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
     arucoParams = cv2.aruco.DetectorParameters()
     detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
-    (corners, ids, rejected) = detector.detectMarkers(image)
-    if show_aruco_results:
+    (corners, ids, _) = detector.detectMarkers(image)
+    if debug:
         outputImage = image.copy()
         cv2.aruco.drawDetectedMarkers(outputImage, corners, ids)
         winTitle = f"Markers."
@@ -162,14 +163,33 @@ def map_image_color(fullImage : OurImageType, colormap : OurColormap) -> OurImag
         matched[..., channel] = matched_channel
     return matched
     
-def process_images(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType) -> OurImageType:
+def process_images(inputCard : OurImageType, referenceCard : OurImageType, fullImage : OurImageType, debug : bool = False) -> OurImageType:
     """
         Return modified full image, by using histogram equalizatin on input and
          reference cards and applying that transformation on fullImage.
     """
     colormap = create_colormap(inputCard, referenceCard)
     rv = map_image_color(fullImage, colormap)
+    if debug:
+        plot_colormap(colormap)
     return rv
+
+def plot_colormap(colormap : OurColormap) -> None:
+    ngraph = len(colormap)
+    fig, axis = plt.subplots(nrows=1, ncols=1, sharex=True, sharey=True)
+    colors = ['red', 'green', 'blue']
+    for i in range(ngraph):
+        data = colormap[i]
+        axis.plot(data, color=colors[i], label=colors[i])
+    axis.set_aspect(1)
+    axis.set_xticks(np.arange(0, 257, 32))
+    axis.set_yticks(np.arange(0, 257, 32))
+    axis.set_xlabel("Input")
+    axis.set_ylabel("Output")
+    axis.grid(linestyle='dotted')
+    fig.legend()
+    plt.show()
+
 
 def main():
     # construct the argument parser and parse the arguments
@@ -264,7 +284,7 @@ def main():
             print('resize Final: '+repr(width))
             img1 = imutils.resize(img1, width)
 
-    result2 = process_images(imageCard, rawCard, img1)
+    result2 = process_images(imageCard, rawCard, img1, args["debug"])
 
 
 
